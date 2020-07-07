@@ -7,6 +7,15 @@ class DuplicateInputError extends Error {
   }
 }
 
+// EmptyCartError represents the error when
+// Calculating a total on an empty shopping cart
+class EmptyCartError extends Error {
+  constructor(message?: string) {
+    super(`EmptyCartError: ${message}`);
+    Object.setPrototypeOf(this, InvalidInputError.prototype);
+  }
+}
+
 // InvalidInputError represents the error when
 // customer is trying to put invalid input
 class InvalidInputError extends Error {
@@ -25,4 +34,4 @@ class ItemNotFoundError extends Error {
   }
 }
 
-export { DuplicateInputError, InvalidInputError, ItemNotFoundError };
+export { DuplicateInputError, EmptyCartError, InvalidInputError, ItemNotFoundError };

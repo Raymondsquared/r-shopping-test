@@ -53,7 +53,9 @@ npm start
 
 ## To Do
 
-- Put something here.
+- The ability to handle multiple shopping carts.
+- The ability to save and retrieve shopping carts.
+- The ability to support mutiple currencies.
 
 ## Assumptions Made
 
