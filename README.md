@@ -57,7 +57,10 @@ npm start
 
 ## Assumptions Made
 
-- Put something here.
+- Item will always have SKU, name and price.
+- SKU is limited to just 3 characters.
+- SKU is unique.
+- Price must be above \$0.
 
 # Other Information
 
