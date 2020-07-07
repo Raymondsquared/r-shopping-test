@@ -1,3 +1,4 @@
+import { BundlePromotionService } from '../../promotion/services/bundle';
 import { MainCheckoutService } from './checkout';
 import { EmptyCartError, InvalidInputError, ItemNotFoundError } from '../../common/error';
 import { MockItemRepository } from '../../item/repositories/mock';
@@ -5,14 +6,45 @@ import { Output } from '../../common/types/output';
 import { ItemRepository } from '../../item/types/repository';
 import { CheckoutService } from '../types/service';
 import { Item } from '../../item/types/item';
+import { PromotionService } from '../../promotion/types/service';
+import { PromotionItem } from '../../promotion/types/promotion';
+
+// Setup test
+const promotionItem1 = {
+  sku: 'p01',
+  name: 'valid-name-p1',
+  price: 1,
+} as Item;
+const promotionItem2 = {
+  sku: 'p02',
+  name: 'valid-name-p2',
+  price: 0.5,
+} as Item;
 
 const itemRepository: ItemRepository = new MockItemRepository();
-const checkoutService: CheckoutService = new MainCheckoutService(itemRepository);
+itemRepository.insertMany([promotionItem1, promotionItem2]);
+const bundlePromotionService: PromotionService = new BundlePromotionService([
+  {
+    ...promotionItem1,
+    bundleItems: [
+      {
+        ...promotionItem2,
+        // free on bundle
+        price: 0,
+      },
+    ],
+    minimumQuantity: 2,
+  },
+] as PromotionItem[]);
+const checkoutService: CheckoutService = new MainCheckoutService(itemRepository, [
+  bundlePromotionService,
+]);
 
 beforeEach(() => {
   checkoutService.clear();
 });
 
+// Test cases
 describe('GIVEN `scan` method in `CheckoutService` module', () => {
   describe('WHEN it is invoked with invalid input', () => {
     it('THEN it should return valid output', async () => {
@@ -122,6 +154,41 @@ describe('GIVEN `total` method in `CheckoutService` module', () => {
       expect(checkoutService.scan(validItem2.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan(validItem1.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan('t03')).toEqual(expectedOutput2);
+      expect(checkoutService.total()).toEqual(expectedOutput3);
+    });
+
+    it('THEN it should return valid output with promotional itmes', async () => {
+      const validItem1: Item = {
+        sku: 't04',
+        name: 'valid-name',
+        price: 0.99,
+      };
+      const expectedOutput1: Output<boolean> = {
+        data: true,
+      };
+      const expectedOutput2: Output<boolean> = {
+        data: false,
+        error: new ItemNotFoundError(),
+      };
+      // t04 = 0.99
+      // t04 = 0.99
+      // p01 = 1
+      // p01 = 1
+      // p01 = 1
+      // p02 = 0.5
+      // p02 = 0 --> bundle when buying 2 of p01
+      const expectedOutput3: Output<string> = {
+        data: `SKUs Scanned: t04, t04, p01, p01, p01, p02, p02\nTotal expected: $5.48`,
+      };
+
+      expect(itemRepository.insertMany([validItem1])).toEqual(expectedOutput1);
+      expect(checkoutService.scan(validItem1.sku)).toEqual(expectedOutput1);
+      expect(checkoutService.scan(validItem1.sku)).toEqual(expectedOutput1);
+      expect(checkoutService.scan('t03')).toEqual(expectedOutput2);
+      expect(checkoutService.scan(promotionItem1.sku)).toEqual(expectedOutput1);
+      expect(checkoutService.scan(promotionItem1.sku)).toEqual(expectedOutput1);
+      expect(checkoutService.scan(promotionItem1.sku)).toEqual(expectedOutput1);
+      expect(checkoutService.scan(promotionItem2.sku)).toEqual(expectedOutput1);
       expect(checkoutService.total()).toEqual(expectedOutput3);
     });
   });

@@ -56,6 +56,8 @@ npm start
 - The ability to handle multiple shopping carts.
 - The ability to save and retrieve shopping carts.
 - The ability to support mutiple currencies.
+- Free promotion only works with free 1 item, buy x amount of `atv` will get one free atv, would be aweomse if that number free item can be customisable.
+- Bundle item `mbp` only works when we are giving away free items or items with 0 price `vga`, it could be made to be more customisable.
 
 ## Assumptions Made
 
@@ -63,6 +65,7 @@ npm start
 - SKU is limited to just 3 characters.
 - SKU is unique.
 - Price must be above \$0.
+- Buying a bundle item such as `mbp` will always get a `vga` for free, without scanning it.
 
 # Other Information
 
@@ -74,7 +77,7 @@ Time breakdown:
 
 [node]: https://nodejs.org/
 [npm]: https://www.npmjs.com/
-[shield-coverage]: https://img.shields.io/badge/coverage-84%25-brightgreen.svg
+[shield-coverage]: https://img.shields.io/badge/coverage-92%25-brightgreen.svg
 [shield-dependencies]: https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg
 [shield-license]: https://img.shields.io/badge/license-MIT-blue.svg
 [shield-node]: https://img.shields.io/badge/node.js%20support-10.16.2-brightgreen.svg
