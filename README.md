@@ -1,45 +1,76 @@
-# r-shopping-typescript
-Shopping Test with TypeScript
+# Shopping Test with TypeScript
 
-You have been engaged to build the checkout system. We will start with the following products in our catalogue
+A small codebase for emulating shopping transactions.
 
+[![NPM version][shield-npm]](#)
+[![Node.js version support][shield-node]](#)
+[![Code coverage][shield-coverage]](#)
+[![Dependencies][shield-dependencies]](#)
 
-| SKU     | Name        | Price    |
-| --------|:-----------:| --------:|
-| ipd     | Super iPad  | $549.99  |
-| mbp     | MacBook Pro | $1399.99 |
-| atv     | Apple TV    | $109.50  |
-| vga     | VGA adapter | $30.00   |
+## Table of Contents
 
-As we're launching our new computer store, we would like to have a few opening day specials.
+- [Requirements](#requirements)
+- [Usage](#usage)
+- [Design Decision](#design-decision)
+- [To Do](#to-do)
+- [Assumption Made](#assumptions-made)
+- [Other Information](#other-information)
 
-- we're going to have a 3 for 2 deal on Apple TVs. For example, if you buy 3 Apple TVs, you will pay the price of 2 only
-- the brand new Super iPad will have a bulk discounted applied, where the price will drop to $499.99 each, if someone buys more than 4
-- we will bundle in a free VGA adapter free of charge with every MacBook Pro sold
+## Requirements
 
-As our Sales manager is quite indecisive, we want the pricing rules to be as flexible as possible as they can change in the future with little notice.
+Bank emulator requires the following to run:
 
-Our checkout system can scan items in any order.
+- [Node.js][node] 10+
+- [npm][npm] (normally comes with Node.js)
 
-The interface to our checkout looks like this (shown in java):
+## Usage
 
-```java
-  Checkout co = new Checkout(pricingRules);
-  co.scan(item1);
-  co.scan(item2);
-  co.total();
+Intalling dependencies
+
+```sh
+npm install
 ```
 
-Your task is to implement a checkout system that fulfils the requirements described above.
+Where to start?
 
-Example scenarios
------------------
+- `main.js` is the first points of entry in this application.
 
-SKUs Scanned: atv, atv, atv, vga
-Total expected: $249.00
+### Test
 
-SKUs Scanned: atv, ipd, ipd, atv, ipd, ipd, ipd
-Total expected: $2718.95
+```sh
+npm test
+```
 
-SKUs Scanned: mbp, vga, ipd
-Total expected: $1949.98
+### Run
+
+```sh
+npm start
+```
+
+## Design Decision
+
+- Programming Language: TypeScript (JavaScript), I have been doing JavaScript for the past 1 year, It's what I am used to at the moment.
+
+## To Do
+
+- Put something here.
+
+## Assumptions Made
+
+- Put something here.
+
+# Other Information
+
+Time breakdown:
+
+- development: 2.5 hours.
+- documentation: 0.5 hours.
+- operations: 0.5 hours.
+
+[node]: https://nodejs.org/
+[npm]: https://www.npmjs.com/
+[shield-coverage]: https://img.shields.io/badge/coverage-84%25-brightgreen.svg
+[shield-dependencies]: https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen.svg
+[shield-license]: https://img.shields.io/badge/license-MIT-blue.svg
+[shield-node]: https://img.shields.io/badge/node.js%20support-10.16.2-brightgreen.svg
+[shield-npm]: https://img.shields.io/badge/npm-v6.9.0-blue.svg
