@@ -1,0 +1,18 @@
+# Test
+/tests/*
+coverage
+
+# CI/CD
+dist
+ac-virtual-experience-processor.zip
+infrastructure/lambda/virtual-experience-processor.js
+infrastructure/lambda/virtual-experience-processor.js.map
+
+# JavaScript
+node_modules
+
+# VS Code
+.vscode
+
+# Mongo
+mongo.js
