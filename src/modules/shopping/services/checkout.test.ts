@@ -36,9 +36,10 @@ const bundlePromotionService: PromotionService = new BundlePromotionService([
     minimumQuantity: 2,
   },
 ] as PromotionItem[]);
-const checkoutService: CheckoutService = new MainCheckoutService(itemRepository, [
-  bundlePromotionService,
-]);
+const checkoutService: CheckoutService = new MainCheckoutService(
+  [bundlePromotionService],
+  itemRepository
+);
 
 beforeEach(() => {
   checkoutService.clear();
@@ -122,7 +123,7 @@ describe('GIVEN `total` method in `CheckoutService` module', () => {
         error: new EmptyCartError(),
       };
 
-      expect(checkoutService.total()).toEqual(expectedOutput);
+      expect(checkoutService.summary()).toEqual(expectedOutput);
     });
   });
 
@@ -154,7 +155,7 @@ describe('GIVEN `total` method in `CheckoutService` module', () => {
       expect(checkoutService.scan(validItem2.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan(validItem1.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan('t03')).toEqual(expectedOutput2);
-      expect(checkoutService.total()).toEqual(expectedOutput3);
+      expect(checkoutService.summary()).toEqual(expectedOutput3);
     });
 
     it('THEN it should return valid output with promotional itmes', async () => {
@@ -189,7 +190,7 @@ describe('GIVEN `total` method in `CheckoutService` module', () => {
       expect(checkoutService.scan(promotionItem1.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan(promotionItem1.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan(promotionItem2.sku)).toEqual(expectedOutput1);
-      expect(checkoutService.total()).toEqual(expectedOutput3);
+      expect(checkoutService.summary()).toEqual(expectedOutput3);
     });
   });
 });

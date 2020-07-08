@@ -1,21 +1,27 @@
 import { isEmpty } from 'lodash';
 
+import { iPad, macBook, appleTV, vgaAdapter } from '../../item/demo';
 import { EmptyCartError, InvalidInputError, ItemNotFoundError } from '../../common/error';
-import { Output } from '../../common/types/output';
-import { CheckoutService } from '../types/service';
+import { MockItemRepository } from '../../item/repositories/mock';
 import { Item } from '../../item/types/item';
+import { Output } from '../../common/types/output';
+import { Promotion } from '../../promotion/types/promotion';
 import { ItemRepository } from '../../item/types/repository';
+import { CheckoutService } from '../types/service';
 import { PromotionService } from '../../promotion/types/service';
-import { Promotion, PromotionItem } from '../../promotion/types/promotion';
+
+// Populate demo products
+const testItemRepository: ItemRepository = new MockItemRepository();
+testItemRepository.insertMany([iPad, macBook, appleTV, vgaAdapter]);
 
 class MainCheckoutService implements CheckoutService {
   #items: Item[];
   #itemRepository: ItemRepository;
   #promotionServices: PromotionService[];
 
-  constructor(itemRepository: ItemRepository, promotionServices: PromotionService[]) {
+  constructor(promotionServices: PromotionService[], itemRepository?: ItemRepository) {
     this.#items = [] as Item[];
-    this.#itemRepository = itemRepository;
+    this.#itemRepository = itemRepository || testItemRepository;
     this.#promotionServices = promotionServices;
   }
 
@@ -63,7 +69,7 @@ class MainCheckoutService implements CheckoutService {
     return output;
   }
 
-  total(): Output<string> {
+  summary(): Output<string> {
     const output: Output<string> = {};
     try {
       if (isEmpty(this.#items)) {
@@ -109,6 +115,22 @@ class MainCheckoutService implements CheckoutService {
       console.error('Failed calculating total, Error:', error);
     }
     return output;
+  }
+
+  total(): void {
+    let output = '';
+    try {
+      const summaryOutput: Output<string> = this.summary();
+      if (isEmpty(summaryOutput.data) || summaryOutput.error) {
+        console.error('Failed totaling checkout, Error:', summaryOutput.error);
+      }
+
+      output = summaryOutput.data;
+    } catch (error) {
+      console.error(error);
+    }
+
+    console.log(output);
   }
 }
 
