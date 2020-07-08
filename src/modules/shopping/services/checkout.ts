@@ -5,14 +5,18 @@ import { Output } from '../../common/types/output';
 import { CheckoutService } from '../types/service';
 import { Item } from '../../item/types/item';
 import { ItemRepository } from '../../item/types/repository';
+import { PromotionService } from '../../promotion/types/service';
+import { Promotion, PromotionItem } from '../../promotion/types/promotion';
 
 class MainCheckoutService implements CheckoutService {
   #items: Item[];
   #itemRepository: ItemRepository;
+  #promotionServices: PromotionService[];
 
-  constructor(itemRepository: ItemRepository) {
+  constructor(itemRepository: ItemRepository, promotionServices: PromotionService[]) {
     this.#items = [] as Item[];
     this.#itemRepository = itemRepository;
+    this.#promotionServices = promotionServices;
   }
 
   clear(): Output<boolean> {
@@ -67,13 +71,33 @@ class MainCheckoutService implements CheckoutService {
         return output;
       }
 
+      // Promotions
+      if (!isEmpty(this.#promotionServices)) {
+        for (const promotionService of this.#promotionServices) {
+          this.#items.push(...promotionService.apply(this.#items));
+        }
+      }
+
+      // SKUs
       const itemSKUs = this.#items
         .map((item) => {
-          return item.sku;
+          if (item?.sku) {
+            return item.sku;
+          }
         })
         .join(', ');
-      const itemsReducer = (priceAccumulator: number, currentItem: Item) => {
-        return priceAccumulator + currentItem.price;
+
+      // Price
+      const itemsReducer = (priceAccumulator: number, currentItem: Promotion) => {
+        let modifier = 0;
+        if (currentItem.price) {
+          modifier += currentItem.price;
+        }
+        if (currentItem.discount) {
+          modifier -= currentItem.discount;
+        }
+
+        return priceAccumulator + modifier;
       };
       const totalPrice = this.#items.reduce(itemsReducer, 0);
 
