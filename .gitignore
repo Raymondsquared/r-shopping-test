@@ -4,9 +4,6 @@ coverage
 
 # CI/CD
 dist
-ac-virtual-experience-processor.zip
-infrastructure/lambda/virtual-experience-processor.js
-infrastructure/lambda/virtual-experience-processor.js.map
 
 # JavaScript
 node_modules
