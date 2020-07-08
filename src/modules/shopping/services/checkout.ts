@@ -1,37 +1,41 @@
 import { isEmpty } from 'lodash';
 
-import { EmptyCartError, InvalidInputError, ItemNotFoundError } from '../../common/error';
-import { Output } from '../../common/types/output';
-import { CheckoutService } from '../types/service';
+import { iPad, macBook, appleTV, vgaAdapter } from '../../item/demo';
+import {
+  DuplicateInputError,
+  EmptyCartError,
+  InvalidInputError,
+  ItemNotFoundError,
+} from '../../common/error';
+import { MockItemRepository } from '../../item/repositories/mock';
 import { Item } from '../../item/types/item';
+import { Output } from '../../common/types/output';
+import { PromotionItem } from '../../promotion/types/promotion';
 import { ItemRepository } from '../../item/types/repository';
+import { CheckoutService } from '../types/service';
 import { PromotionService } from '../../promotion/types/service';
-import { Promotion, PromotionItem } from '../../promotion/types/promotion';
+
+// Populate demo products
+const testItemRepository: ItemRepository = new MockItemRepository();
+testItemRepository.insertMany([iPad, macBook, appleTV, vgaAdapter]);
 
 class MainCheckoutService implements CheckoutService {
   #items: Item[];
   #itemRepository: ItemRepository;
   #promotionServices: PromotionService[];
 
-  constructor(itemRepository: ItemRepository, promotionServices: PromotionService[]) {
+  constructor(promotionServices: PromotionService[], itemRepository?: ItemRepository) {
     this.#items = [] as Item[];
-    this.#itemRepository = itemRepository;
+    this.#itemRepository = itemRepository || testItemRepository;
     this.#promotionServices = promotionServices;
   }
 
-  clear(): Output<boolean> {
-    const output: Output<boolean> = {
-      data: false,
-    };
-
+  clear(): void {
     try {
       this.#items = [] as Item[];
-      output.data = true;
     } catch (error) {
       console.error('Failed clearing items, Error:', error);
     }
-
-    return output;
   }
 
   scan(itemSKU: string): Output<boolean> {
@@ -46,7 +50,7 @@ class MainCheckoutService implements CheckoutService {
       }
 
       const selectItemOutput = this.#itemRepository.selectOne(itemSKU);
-      if (!isEmpty(selectItemOutput.error)) {
+      if (selectItemOutput?.error) {
         output.error = selectItemOutput.error;
         return output;
       } else if (isEmpty(selectItemOutput?.data)) {
@@ -63,7 +67,7 @@ class MainCheckoutService implements CheckoutService {
     return output;
   }
 
-  total(): Output<string> {
+  summary(): Output<string> {
     const output: Output<string> = {};
     try {
       if (isEmpty(this.#items)) {
@@ -74,7 +78,18 @@ class MainCheckoutService implements CheckoutService {
       // Promotions
       if (!isEmpty(this.#promotionServices)) {
         for (const promotionService of this.#promotionServices) {
-          this.#items.push(...promotionService.apply(this.#items));
+          const promotionItemsAppliedOutput = promotionService.apply(this.#items);
+          if (!isEmpty(promotionItemsAppliedOutput?.error)) {
+            console.error(
+              'Failed applying promotion for items, Error:',
+              promotionItemsAppliedOutput.error
+            );
+            continue;
+          }
+
+          if (!isEmpty(promotionItemsAppliedOutput?.data)) {
+            this.#items.push(...promotionItemsAppliedOutput.data);
+          }
         }
       }
 
@@ -88,7 +103,7 @@ class MainCheckoutService implements CheckoutService {
         .join(', ');
 
       // Price
-      const itemsReducer = (priceAccumulator: number, currentItem: Promotion) => {
+      const itemsReducer = (priceAccumulator: number, currentItem: PromotionItem) => {
         let modifier = 0;
         if (currentItem.price) {
           modifier += currentItem.price;
@@ -109,6 +124,37 @@ class MainCheckoutService implements CheckoutService {
       console.error('Failed calculating total, Error:', error);
     }
     return output;
+  }
+
+  total(): void {
+    let output = '';
+    try {
+      const summaryOutput: Output<string> = this.summary();
+
+      // Print known error friendly messsage on the application layer
+      if (summaryOutput?.error) {
+        switch (summaryOutput.error.constructor) {
+          case EmptyCartError:
+            console.log('Cart is empty!');
+            break;
+          case DuplicateInputError:
+          case InvalidInputError:
+          case ItemNotFoundError:
+            console.log(summaryOutput.error.message);
+            break;
+          default:
+            console.log('Failed totaling checkout, Error:', summaryOutput.error);
+        }
+      }
+
+      if (summaryOutput?.data) {
+        output = summaryOutput?.data;
+      }
+    } catch (error) {
+      console.error('Unknown Error, please contact administrator, Error:', error);
+    }
+
+    console.log(output);
   }
 }
 

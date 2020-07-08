@@ -7,52 +7,57 @@ import { ItemRepository } from '../../item/types/repository';
 import { CheckoutService } from '../types/service';
 import { Item } from '../../item/types/item';
 import { PromotionService } from '../../promotion/types/service';
-import { PromotionItem } from '../../promotion/types/promotion';
+import { PromotionRuleItem } from '../../promotion/types/promotion';
 
 // Setup test
-const promotionItem1 = {
+const promotionRuleItem1 = {
   sku: 'p01',
   name: 'valid-name-p1',
   price: 1,
 } as Item;
-const promotionItem2 = {
+const promotionRuleItem2 = {
   sku: 'p02',
   name: 'valid-name-p2',
   price: 0.5,
 } as Item;
 
 const itemRepository: ItemRepository = new MockItemRepository();
-itemRepository.insertMany([promotionItem1, promotionItem2]);
+itemRepository.insertMany([promotionRuleItem1, promotionRuleItem2]);
 const bundlePromotionService: PromotionService = new BundlePromotionService([
   {
-    ...promotionItem1,
+    ...promotionRuleItem1,
     bundleItems: [
       {
-        ...promotionItem2,
+        ...promotionRuleItem2,
         // free on bundle
         price: 0,
       },
     ],
     minimumQuantity: 2,
   },
-] as PromotionItem[]);
-const checkoutService: CheckoutService = new MainCheckoutService(itemRepository, [
-  bundlePromotionService,
-]);
+] as PromotionRuleItem[]);
+const checkoutService: CheckoutService = new MainCheckoutService(
+  [bundlePromotionService],
+  itemRepository
+);
 
+let errorFunc;
 beforeEach(() => {
   checkoutService.clear();
+  errorFunc = jest.fn();
 });
 
 // Test cases
-describe('GIVEN `scan` method in `CheckoutService` module', () => {
-  describe('WHEN it is invoked with invalid input', () => {
-    it('THEN it should return valid output', async () => {
-      const expectedOutput: Output<boolean> = {
-        data: true,
-      };
+describe('GIVEN `clear` method in `CheckoutService` module', () => {
+  describe('WHEN it is invoked', () => {
+    it('THEN it should return nothing', async () => {
+      try {
+        checkoutService.clear();
+      } catch (error) {
+        errorFunc();
+      }
 
-      expect(checkoutService.clear()).toEqual(expectedOutput);
+      expect(errorFunc).toHaveBeenCalledTimes(0);
     });
   });
 });
@@ -115,14 +120,14 @@ describe('GIVEN `scan` method in `CheckoutService` module', () => {
   });
 });
 
-describe('GIVEN `total` method in `CheckoutService` module', () => {
+describe('GIVEN `summary` method in `CheckoutService` module', () => {
   describe('WHEN it is invoked with empty cart', () => {
     it('THEN it should return `EmptyItemError`', async () => {
       const expectedOutput: Output<boolean> = {
         error: new EmptyCartError(),
       };
 
-      expect(checkoutService.total()).toEqual(expectedOutput);
+      expect(checkoutService.summary()).toEqual(expectedOutput);
     });
   });
 
@@ -154,7 +159,7 @@ describe('GIVEN `total` method in `CheckoutService` module', () => {
       expect(checkoutService.scan(validItem2.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan(validItem1.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan('t03')).toEqual(expectedOutput2);
-      expect(checkoutService.total()).toEqual(expectedOutput3);
+      expect(checkoutService.summary()).toEqual(expectedOutput3);
     });
 
     it('THEN it should return valid output with promotional itmes', async () => {
@@ -185,11 +190,49 @@ describe('GIVEN `total` method in `CheckoutService` module', () => {
       expect(checkoutService.scan(validItem1.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan(validItem1.sku)).toEqual(expectedOutput1);
       expect(checkoutService.scan('t03')).toEqual(expectedOutput2);
-      expect(checkoutService.scan(promotionItem1.sku)).toEqual(expectedOutput1);
-      expect(checkoutService.scan(promotionItem1.sku)).toEqual(expectedOutput1);
-      expect(checkoutService.scan(promotionItem1.sku)).toEqual(expectedOutput1);
-      expect(checkoutService.scan(promotionItem2.sku)).toEqual(expectedOutput1);
-      expect(checkoutService.total()).toEqual(expectedOutput3);
+      expect(checkoutService.scan(promotionRuleItem1.sku)).toEqual(expectedOutput1);
+      expect(checkoutService.scan(promotionRuleItem1.sku)).toEqual(expectedOutput1);
+      expect(checkoutService.scan(promotionRuleItem1.sku)).toEqual(expectedOutput1);
+      expect(checkoutService.scan(promotionRuleItem2.sku)).toEqual(expectedOutput1);
+      expect(checkoutService.summary()).toEqual(expectedOutput3);
+    });
+  });
+});
+
+describe('GIVEN `total` method in `CheckoutService` module', () => {
+  describe('WHEN it is invoked with empty cart', () => {
+    it('THEN it should return valid output', async () => {
+      try {
+        checkoutService.total();
+      } catch (error) {
+        errorFunc();
+      }
+
+      expect(errorFunc).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('WHEN it is invoked with valid cart', () => {
+    it('THEN it should return valid output', async () => {
+      try {
+        const validItem1: Item = {
+          sku: 't05',
+          name: 'valid-name',
+          price: 0.99,
+        };
+
+        const expectedOutput1: Output<boolean> = {
+          data: true,
+        };
+
+        expect(itemRepository.insertMany([validItem1])).toEqual(expectedOutput1);
+        expect(checkoutService.scan(validItem1.sku)).toEqual(expectedOutput1);
+        checkoutService.total();
+      } catch (error) {
+        errorFunc();
+      }
+
+      expect(errorFunc).toHaveBeenCalledTimes(0);
     });
   });
 });

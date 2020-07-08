@@ -3,7 +3,7 @@
 class DuplicateInputError extends Error {
   constructor(message?: string) {
     super(`DuplicateInputError: ${message}`);
-    Object.setPrototypeOf(this, InvalidInputError.prototype);
+    Object.setPrototypeOf(this, DuplicateInputError.prototype);
   }
 }
 
@@ -12,7 +12,7 @@ class DuplicateInputError extends Error {
 class EmptyCartError extends Error {
   constructor(message?: string) {
     super(`EmptyCartError: ${message}`);
-    Object.setPrototypeOf(this, InvalidInputError.prototype);
+    Object.setPrototypeOf(this, EmptyCartError.prototype);
   }
 }
 
@@ -30,7 +30,7 @@ class InvalidInputError extends Error {
 class ItemNotFoundError extends Error {
   constructor(message?: string) {
     super(`ItemNotFoundError: ${message}`);
-    Object.setPrototypeOf(this, InvalidInputError.prototype);
+    Object.setPrototypeOf(this, ItemNotFoundError.prototype);
   }
 }
 

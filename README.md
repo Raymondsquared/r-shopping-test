@@ -26,7 +26,8 @@ Shopping emulator requires the following to run:
 ## Usage
 
 Intalling dependencies:
--- We only use lodash to do array manipulations for the mock database.
+
+- We only use lodash to do array manipulations for the mock database.
 
 ```sh
 npm install
@@ -72,7 +73,7 @@ npm start
 
 Time breakdown:
 
-- development: 2.5 hours.
+- development: 3 hours.
 - documentation: 0.5 hours.
 - operations: 0.5 hours.
 
